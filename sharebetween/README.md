@@ -10,4 +10,4 @@ CREATE TABLE `sharebetween_share` (
   PRIMARY KEY (`id`),
   KEY `fk_content` (`content_id`),
   CONSTRAINT `fk_content` FOREIGN KEY (`content_id`) REFERENCES `content` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9669 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
