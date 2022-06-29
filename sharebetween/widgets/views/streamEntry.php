@@ -1,1 +1,2 @@
-<?= $share->sharedContent->getPolymorphicRelation()->getWallOut(['renderControls' => false, /*'renderAddons' => false */]); ?>
+<?= $share->sharedContent->getPolymorphicRelation()->getWallOut() ?>
+

@@ -1,3 +1,3 @@
-## Description
+## Share Content Module
 
-In development
+Share content between spaces

@@ -4,15 +4,6 @@
 use yii\helpers\Url;
 ?>
 
-<?php if (!Yii::$app->user->isGuest): ?>
-    <span class="likeLinkContainer" id="likeLinkContainer_<?= $id ?>">
-        <a href="<?=Url::to(['/sharebetween/share', 'id' => $id]); ?>" data-target="#globalModal">
-            Share
-            <?php
-            /*
-            echo Yii::t('LikeModule.widgets_views_likeLink', 'Like');
-            */
-            ?>
-        </a>
-    </span>
-<?php endif; ?>
+<li>
+    <a href="<?=Url::to(['/sharebetween/share', 'id' => $id]); ?>" data-share-id="<?= $id ?>" data-target="#globalModal"><i class="fa fa-share-alt"></i> <?php echo Yii::t('SharebetweenModule.base', 'Share'); ?></a>
+</li>

@@ -1,31 +1,23 @@
 <?php
-
 namespace humhub\modules\sharebetween\models;
+
+use humhub\modules\space\models\Space;
+use humhub\modules\content\models\Content; //   Add 
+
 
 use Yii;
 use yii\base\Model;
-
 /**
- * @author Luke
- * @package humhub.modules_core.space.forms
- * @since 0.5
+ * Description of ShareForm
+ *
+ * @author buddha modif Patman
  */
 class ShareForm extends Model
 {
-
     /**
-     * Field for Invite GUIDs
-     *
-     * @var type
+     * An array representing all guids of the share form
+     * @var array
      */
-    public $space;
-
-    public function rules()
-    {
-        return array(
-            array('space', 'safe'),
-                //array('inviteExternal', 'checkInviteExternal'),
-        );
-    }
+    public $guids;
 
 }

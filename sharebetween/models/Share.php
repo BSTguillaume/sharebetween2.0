@@ -6,6 +6,7 @@ use Yii;
 use humhub\modules\content\components\ContentActiveRecord;
 use humhub\modules\content\models\Content;
 use humhub\modules\content\components\ContentContainerActiveRecord;
+use humhub\modules\sharebetween\activities\NewShare;
 
 class Share extends ContentActiveRecord
 {
@@ -24,22 +25,68 @@ class Share extends ContentActiveRecord
             [['content_id'], 'required'],
         );
     }
+    
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'content_id' => 'Contenu',
+        ];
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public function getContentName()
+    {
+        return Yii::t('SharebetweenModule.activities_views_created', 'shared content');
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public function getContentDescription()
+    {
+        
+        $sql = 'SELECT P.id FROM humhub.content AS C INNER join  humhub.post AS P ON C.object_id = P.id where C.id = '. $this->content_id ;
+        
+        $messageid = Yii::$app->db->createCommand($sql)->queryAll();
+         if (!$messageid) {
+             return '' ;
+            }
+        $post = \humhub\modules\post\models\Post::findOne($messageid);
+        
+        if (!$post) {
+            return '' ;
+            }
+        
+        return $post->message; 
+        
+    }
+    
+    
+    
+    
 
     public function getSharedContent()
     {
-        return $this->hasOne(Content::className(), ['id' => 'content_id']);
+        return $this->hasOne(Content::class, ['id' => 'content_id']);
     }
 
     public static function create(Content $content, ContentContainerActiveRecord $container)
     {
+ 
         if (self::hasShare($content, $container)) {
-            throw new \yii\web\HttpException(400, 'Shared!');
+            return;
         }
-
+        
         $share = new self;
         $share->content_id = $content->id;
         $share->content->container = $container;
-        $share->save();
+        $shared = $share->save();
     }
 
     public static function hasShare(Content $content, ContentContainerActiveRecord $container)
@@ -58,6 +105,25 @@ class Share extends ContentActiveRecord
         foreach ($shares as $share) {
             $share->delete();
         }
+    }
+    
+  
+    /**
+     * Checks if the user can share this content.
+     * This is only allowed for workspace owner.
+     *
+     * @return boolean
+     */
+    public static function canShare(Content $content)
+    {
+        
+        if ($content->isArchived()) {
+            return false;
+        }
+        
+        // anybody can share 
+        //return $content->getContainer()->permissionManager->can(new \humhub\modules\content\permissions\ManageContent());
+        return true;
     }
 
 }

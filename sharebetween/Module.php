@@ -2,6 +2,8 @@
 
 namespace humhub\modules\sharebetween;
 
+use humhub\modules\sharebetween\models\Share;
+
 class Module extends \humhub\components\Module
 {
 
@@ -10,7 +12,7 @@ class Module extends \humhub\components\Module
      */
     public function disable()
     {
-        foreach (models\Share::find()->all() as $share) {
+        foreach (Share::find()->all() as $share) {
             $share->delete();
         }
 

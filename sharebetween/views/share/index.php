@@ -1,120 +1,77 @@
 <?php
 
-use Yii;
-use yii\bootstrap\ActiveForm;
+use humhub\modules\space\widgets\Chooser;
+use humhub\modules\space\widgets\SpaceChooserItem;
+use humhub\modules\space\widgets\SpacePickerField;
+use humhub\modules\ui\form\widgets\ActiveForm;
 
+\humhub\modules\sharebetween\assets\Select2ExtensionAssetModal::register($this);
+$triggerError = (strlen($error) > 0 ? '1' : '0');
 ?>
-<div class="modal-dialog modal-dialog-small animated fadeIn">
+<div id="shareModal" class="modal-dialog modal-dialog-small animated fadeIn">
     <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title"
-                id="myModalLabel"><?= Yii::t('SharebetweenModule.base', '<strong>Share</strong> content'); ?></h4>
+            <h4 class="modal-title" id="myModalLabel">
+                <?= Yii::t('SharebetweenModule.base', '<strong>Share content</strong><BR><BR><span>Please select spaces</span>') ?>
+            </h4>
         </div>
+
+        <?php $form = ActiveForm::begin(['id' => 'space_form', 'options' => ['data-ui-tabbed-form' => '']]); ?>
+        
         <div class="modal-body">
-
-            <br/>
             <div class="text-center">
-                <ul id="tabs" class="nav nav-tabs tabs-center" data-tabs="tabs">
-<!--                    <li class="active tab-internal"><a href="#internal"
-                                                       data-toggle="tab"><?= Yii::t('SharebetweenModule.base', 'On space'); ?></a>
-                    </li>
-    -->                <li class="tab-external"><a href="#share_profile"
-                                                data-toggle="tab"><?= Yii::t('SharebetweenModule.base', 'On your profile'); ?></a>
-                    </li>
-                </ul>
+                <?= SpacePickerField::widget([
+                    'id' => 'space_filter',
+                    'model' => $space,
+                    'selection' => [],
+                    'attribute' => 'guids',
+                    'placeholder' => Yii::t('SearchModule.base', 'Specify space')
+                ]) ?>
+
+                <?= \humhub\widgets\LoaderWidget::widget(['id' => 'share-loader', 'cssClass' => 'loader-modal', 'show' => '']) ?>
             </div>
-            <br/>
-
-            <div class="tab-content">
-<!--                <div class="tab-pane active" id="internal">
-                    <?php $form = ActiveForm::begin(); ?>
-
-                    <?= Yii::t('SharebetweenModule.base', 'To share this content with other spaces, please type their names below to find and pick them.'); ?>
-
-                    <br/><br/>
-
-                    <?= $form->field($model, 'space')->textInput(['id' => 'invite'])->label(false); ?>
-
-                    <div class="modal-footer">
-
-                        <?= \humhub\widgets\AjaxButton::widget([
-                            'label' => Yii::t('SharebetweenModule.base', 'Share'),
-                            'ajaxOptions' => [
-                                'type' => 'POST',
-                                'beforeSend' => new yii\web\JsExpression('function(){ setModalLoader(); }'),
-                                'success' => new yii\web\JsExpression('function(html){ $("#globalModal").html(html); }'),
-                                'url' => yii\helpers\Url::to(['/sharebetween/share/index', 'id' => $content->id, 'self' => 0]),
-                            ],
-                            'htmlOptions' => [
-                                'class' => 'btn btn-primary'
-                            ]
-                        ]);
-                        ?>
-                        <button type="button" class="btn btn-primary"
-                                data-dismiss="modal"><?= Yii::t('SharebetweenModule.base', 'Close'); ?></button>
-                    </div>                    
-                    <?php ActiveForm::end(); ?>
-
-                </div>
--->                <div class="tab-pane" id="share_profile">
-                    <?php $form = ActiveForm::begin(); ?>
-                    <?= Yii::t('SharebetweenModule.base', 'Share this content directly on your profile.'); ?>
-                    <br/><br/>
-
-                    <div class="modal-footer">
-
-                        <?= \humhub\widgets\AjaxButton::widget([
-                            'label' => Yii::t('SharebetweenModule.base', 'Share'),
-                            'ajaxOptions' => [
-                                'type' => 'POST',
-                                'beforeSend' => new yii\web\JsExpression('function(){ setModalLoader(); }'),
-                                'success' => new yii\web\JsExpression('function(html){ $("#globalModal").html(html); }'),
-                                'url' => yii\helpers\Url::to(['/sharebetween/share/index', 'id' => $content->id, 'self' => 1]),
-                            ],
-                            'htmlOptions' => [
-                                'class' => 'btn btn-primary'
-                            ]
-                        ]);
-                        ?>
-                        <button type="button" class="btn btn-primary"
-                                data-dismiss="modal"><?= Yii::t('SharebetweenModule.base', 'Close'); ?></button>
-
-                        <?php ActiveForm::end(); ?>
-                    </div>
-
-                </div>
-                <?= \humhub\widgets\LoaderWidget::widget(['id' => 'invite-loader', 'cssClass' => 'loader-modal hidden']); ?>
-
-            </div>
-
+        </div>
+        <div class="modal-footer">
+            <?= \humhub\widgets\AjaxButton::widget([
+                'label' => Yii::t('SharebetweenModule.base', 'Share'),
+                'ajaxOptions' => [
+                    'type' => 'POST',
+                    'beforeSend' => new yii\web\JsExpression('function(){ $("#share-loader").show() }'),
+                    'success' => new yii\web\JsExpression("function(html){ $('#globalModal').html(html); }"),
+                    'url' => yii\helpers\Url::to(['/sharebetween/share/index', 'id' => $content->id]),
+                ],
+                'htmlOptions' => [
+                    'class' => 'btn btn-primary'
+                ]
+            ]) ?>
+            <button type="button" class="btn btn-primary" data-dismiss="modal"><?= Yii::t('SharebetweenModule.base', 'Close') ?></button>
         </div>
 
+        <?php $form::end(); ?>
     </div>
-
 </div>
 
 <script type="text/javascript">
+    $(document).ready(function() {
+        let triggerError = '<?= $triggerError ?>' ?? false;
+        $.fn.select2.defaults = {};
+        $('#space_filter').select2();
+        $('#space_filter').trigger('update');
+        setTimeout(() => {
+            $('#space_filter + .select2 input[type=search]').focus();
+        }, 100);
 
-// Shake modal after wrong validation
-<?php if ($model->hasErrors()) : ?>
-        $('.modal-dialog').removeClass('fadeIn');
-        $('.modal-dialog').addClass('shake');
-
-        // check if there is an error at the second tab
-    <?php if ($model->hasErrors('inviteExternal')) : ?>
-            // show tab external tab
-            $('#tabs a:last').tab('show');
-    <?php endif; ?>
-
-<?php endif; ?>
-
-    $('.tab-internal a').on('shown.bs.tab', function (e) {
-        $('#invite_tag_input_field').focus();
+        if (triggerError == '1') {
+            alert("<?= $error ?>");
+            let errorFlag = true;
+            $("#globalModal").modal("hide");
+            $("#globalModal").on("hidden.bs.modal", function (e) {
+                if (errorFlag) {
+                    $(".media.wall-entry-header li > a[data-share-id='<?= $content->id ?>']").click();
+                    errorFlag = false;
+                }
+            });
+        }
     });
-
-    $('.tab-external a').on('shown.bs.tab', function (e) {
-        $('#email_invite').focus();
-    });
-
 </script>

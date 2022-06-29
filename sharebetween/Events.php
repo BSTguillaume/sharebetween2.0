@@ -8,34 +8,50 @@
 
 namespace humhub\modules\sharebetween;
 
+use humhub\modules\content\models\Content;
+use humhub\modules\post\models\Post;
 use Yii;
-use yii\base\BaseObject;
-
-class Events extends BaseObject
+use humhub\modules\sharebetween\widgets\ShareLink;
+use humhub\modules\sharebetween\models\Share;
+class Events
 {
 
-//    public static function onWallEntryControlsInit($event)
-//    {
-//        $stackWidget = $event->sender;
-//        $content = $event->sender->object;
-
-//        $stackWidget->addWidget(widgets\ShareLink::className(), ['content' => $content]);
-//    }
-
-    public static function onContentDelete($event)
-    {
-        $shares = models\Share::findAll(['content_id' => $event->sender->content->id]);
-        foreach ($shares as $share) {
-            $share->delete();
-        }
-    }
-
-    public static function onWallEntryLinksInit($event)
+    public static function onWallEntryControlsInit($event)
     {
         $stackWidget = $event->sender;
         $content = $event->sender->object;
 
-        $stackWidget->addWidget(widgets\ShareLink::className(), ['content' => $content]);
+        $stackWidget->addWidget(ShareLink::class, ['content' => $content]);
+    }
+
+    /**
+     * Delete relations to the Share object
+     */
+    public static function onContentDelete($event)
+    {
+        $content = $event->sender;
+        if (!($content instanceof Content)) {
+            return;
+        }
+
+        if ($content->object_model != Post::class) {
+            return;
+        }
+
+        $shareIds = [];
+        $shares = Share::findAll(['content_id' => $content->id]);
+        foreach ($shares as $share) {
+            $shareIds[] = $share->id;
+        }
+
+        if (empty($shareIds)) {
+            return;
+        }
+
+        $shareContents = Content::find()->where(['object_model' => Share::class, 'object_id' => $shareIds])->all();
+        foreach ($shareContents as $shareContent) {
+            $shareContent->delete();
+        }
     }
 
 }

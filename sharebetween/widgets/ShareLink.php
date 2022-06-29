@@ -8,10 +8,12 @@
 
 namespace humhub\modules\sharebetween\widgets;
 
+use humhub\components\Widget;
 use Yii;
 use humhub\modules\content\components\ContentContainerController;
+use humhub\modules\sharebetween\models\Share;
 
-class ShareLink extends \yii\base\Widget
+class ShareLink extends Widget
 {
 
     /**
@@ -24,14 +26,14 @@ class ShareLink extends \yii\base\Widget
      */
     public function run()
     {
-        if ($this->content instanceof Share) {
+        if ($this->content instanceof Share || !Share::canShare($this->content->content)) {
             return;
         }
         
-        return $this->render('shareLink', array(
-                    'object' => $this->content,
-                    'id' => $this->content->content->id,
-        ));
+        return $this->render('shareLink', [
+            'object' => $this->content,
+            'id' => $this->content->content->id,
+        ]);
     }
 
 }
